@@ -1,0 +1,73 @@
+1、分页
+要实现分页，必须知道某一页的数据从哪里开始到哪里结束
+假设每页显示10条数据
+sql server/oracle:从1开始计数
+第n页                            开始                                      结束
+1                                     1                                         10
+2                                     11                                        20
+3                                     21                                        30
+n                                    (n-1)*10+1                           n*10
+
+mysql:从0开始计数
+第n页                            开始                                      结束
+0                                     0                                         9
+1                                    10                                        19
+2                                     20                                       29
+n                                    n*10                                  (n+1)*10-1
+结论：
+分页：第n页的数据：       第(n-1)*10+1条     ————     第 n*10条
+
+mysql实现分页的sql:
+limit   开始,多少条
+第0页
+select * from student limit 0,10;
+第1页
+select * from student limit 10,10;
+第2页
+select * from student limit 20,10;
+第n页
+select * from student limit n*10,10;
+
+mysql 的分页语句：
+select * from student limit 页数*页面大小,10;
+页面大小：每一页显示的数据量
+
+2、表单重复提交
+
+
+
+
+
+分页实现：
+
+5个变量（属性）
+1.数据总数     100     103                                                                                              （查数据库，select count(*).... ）
+2.页面大小（每页显示的数据条数）30                                                                              (用户自定义)
+3.总页数                                                                                                                      （程序自动计算）
+                  总页数 = 100/20 = 总数据/页面大小
+                  总页数 = 103/20 = 总数据/页面大小 +1
+                        --->总页数 = 数据总数%页面大小==0？ 数据总数/页面大下：数据总数/页面大小+1；
+
+4.当前页（页码）                                                                                                   （用户自定义）                          
+5.当前页的对象集合（实体类集合）：每页显示的所有数据（10个人信息）
+List<Student>                                                                                (查数据库，分页sql)
+
+
+select * from (select rownum r, t.* from(select s.* from student s order by sno asc) t where rownum<=5) where r>=3;
+				
+select o.* from (select * from student) o limit 0,3;
+
+Object[] params  = {currentPage*pageSize,(currentPage-1)*pageSize+1};
+
+<tbody>
+		<%Page page1= (Page)request.getAttribute("page");
+                         for(Student student:page1.getStudents()){
+
+
+
+
+
+
+
+
+

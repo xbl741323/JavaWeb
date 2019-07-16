@@ -1,0 +1,43 @@
+1.使用Eclipse开发Web项目（Jsp）tomcat
+准备工作：
+a.在Eclipse中关联（集成）一下tomcat
+步骤：按顺序点击Window->Preferences->Server->Runtime Environments
+进入后点击add在Apache中选择相应Tomcat服务器（本人用的是Apache Tomcat v8.5）
+然后点击next进入之后在Tomcat installation directory:下选择设置自己tomcat的文件地址，
+在JRE中选择对应的JRE版本（没有的话，自己添加.另外Apache Tomcat v8.5版本对应的JRE应该在7.0以上）
+然后确认即可。	
+(如果没有Apache Tomcat v8.5或Apache Tomcat v9.0的版本可能是因为Eclipse没有升级，
+可以查看自己Eclipse的版本，步骤：按顺序点击Help->About Eclipse查看即可)
+b.在控制面板里再配置一下tomcat
+步骤:在控制台下查找Servers点击其下方的蓝字No servers are available.Click link to create a new server...
+再次选择Tomcat v8.5 Server然后点击next->Finish即可。
+
+创建项目并运行：
+项目里依此点击Web->Dynamic Web Project->next然后设置项目名，然后在其下方Target runtime里选择
+对应的tomcat版本（这里默认选择Apache Tomcat v8.5）然后点击next->next在页面的Generate web.xml 
+deployment descriptor处勾选，然后点击Finish即可。
+（这里提一下布局，如果控制台布局乱了，恢复方法如下：依次点击Window->Perspective->Reset Perspective...即可）
+然后在创建好的Jsp项目的WebContent里创建JSP file编写内容即可。
+编写好之后鼠标右键Servers下的Tomcat v8.5 Server at localhost [stopped,republish]，点击Add and Remove
+在左边Available处选择要添加的项目，然后点击Add再点击Finishi，再在Servers下的Tomcat v8.5 Server at localhost [stopped,republish]处鼠标右键点击Start启动服务器即可。注意：一般建议将eclipse中的tomcat与本地tomcat的配置信息保持一致，即将eclipse中的tomcat设置为托管模式，第一次创建tomcat实例之后，双击，选择Server Location的第二项即可
+
+2.注意：在Eclipse中创建的Web项目，浏览器可以直接访问WebContent中的文件，例如：
+http://localhost:8888/MyJspProject/index1.jsp 其中的index1.jsp就是WebContent目录中的文件；
+但是WEB-INF中的文件无法通过客户端（浏览器）直接访问（因为WEB-INF中的文件权限比较高），只能通过请求转发
+来访问。（并不是任何的内部跳转都能访问WEB-INF；原因是跳转有2种方式：请求转发，重定向）
+
+3.配置tomcat运行时的环境
+       jsp<->Servlet
+a.将tomcat/lib中的servlet-api.jar（学习阶段要用的一个jar包）加入项目的构建路径（不建议这么做）
+b.右键项目->Build Path->Add Library->Server Runtime(加入了所有的jar包)
+
+4.统一字符集编码（运行项目时，如果charset=ISO-8859-1会出现错误提示，所以要统一字符集编码）
+a.编码分类
+设置jsp文件的编码（方法：通过jsp文件中的pageEncoding属性）：jsp->java
+设置浏览器读取jsp文件的编码（方法：通过文件中的content属性）
+一般需要将上述设置成一致的编码，推荐使用UTF-8
+文本编码：
+i.将整个eclipse中的文件统一设置（方法步骤：依次点击WIndow->Preferences->Web->JSP files,将其
+中的Encoding设置成UTF-8）
+ii.设置某一个项目(方法步骤：鼠标右键项目依次点击Properties->Resource,在other里选择UTF-8即可)
+iii.设置单独文件（方法步骤：鼠标右键单个jsp文件单击Properties在other里选择UTF-8即可）

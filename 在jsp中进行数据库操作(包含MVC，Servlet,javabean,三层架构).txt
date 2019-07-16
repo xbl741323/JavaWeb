@@ -1,0 +1,208 @@
+一、jsp访问数据库操作
+jsp就是在html中嵌套的java代码，因此java代码可以写在jsp中<% ... %>
+
+导包操作：java项目：1 jar包复制到工程中 2.右键该jar：build path->add to build Path
+                web项目：jar复制到WEB-INF/lib中
+
+核心：就是将java中的JDBC代码，复制到JSP中的<% %>中
+
+注意：如果jsp出现错误：The import Xxx cannot be re sulved
+
+尝试解决步骤：
+a.（可能是Jdk.tomcat版本问题）右键项目-> build path,将其中的报错libary或lib删除后重新导入
+b.清除各种缓存：右键项目->Clean()
+c.删除之前的tomcat，重新解压tomcat，重启计算器
+d.如果类之前没有，则将该类加入有名的包中（记得导包）
+
+二、JavaBean(jsp中的Java代码写到Java中
+LoginDao如果一个类是访问数据库的后面要加上Dao
+Dao(Data Access Object)数据库访问对象是一个面向对象的数据库接口
+
+刚才我们将jsp中的登录操作的代码，转移到LoginDao.java; 其中LoginDao类就称之为JavaBean
+JavaBean的作用：a.减轻jsp的复杂度 b.提高代码复用（以后任何地方的登录操作，都可以通过调用LoginDao实现）
+
+JavaBean(就是一个Java类)的定义：满足以下两点，就可以称之为JavaBean
+       a.必须是public修饰的类，或public修饰的无参构造
+       b.所有属性(如果有)都是private，并且提供set/get（如果是Boolean 则get可以替换成is ）
+ 使用层面，Java分为2大类：
+a.封装业务逻辑的JavaBean    (例如LoginDao.java这样封装业务逻辑的)
+     可以将jsp中的JDBC代码,封装到LoginDao.java中
+
+b.封装数据的JavaBean (实体类，例如：Student.java Person.java ...)
+   对应于数据库中的一张表
+   Login login = New Login(name,pwd);//即用Login对象封装了2个数据（用户名密码）
+
+总结：
+      封装业务逻辑的JavaBean用于操作一个封装数据的JavaBean
+      封装数据的JavaBean对应于数据库中的一张表
+可以发现。JavaBean可以简化代码（jsp->jsp+java）、提高代码的复用(LoginDao.java)
+
+三、MVC设计模式
+M：Model，模型：一个功能，用JavaBean实现。
+V:View，视图：用于展示、以及与用户的交互。使用html、js、css、jsp、jquery等前端技术实现。
+C:Controller，控制器：接受用户请求，将请求跳转到模型进行处理；模型处理完毕后，再将处理的结果返回给请求处。可以使用jsp实现，但是一般建议使用Servlet实现控制器。
+
+Jsp->Java(Servlet)->JSP
+
+四、Servlet(用于MVC模式中的控制器)（Servlet是一个java,但是并不是所有的java都是Servlet）
+Java类必须符合一定的规范才是Servlet
+规范:
+a.必须继承 javax.servlet.http.HttpServlet这个类
+b.必须重写javax.servlet.http.HttpServlet这个类其中的doGet()或doPost()方法
+
+doGet()：接受并处理所有的get提交方式的请求
+doPost()：接受并处理所有的post提交方式的请求
+
+注意：Servlet要想使用，必须配置web.xml或者@Servlet
+Servlet2.5：web.xml
+Servlet3.0：@Servlet
+
+Servlet2.5：web.xml
+
+项目的根目录 ：WebContent、src
+<a href="WelcomeServlet">所在的jsp是在Webcontent目录中，因此。发出的请求WelcomeServlet是去请求项目的根目录。
+
+Servlet流程：
+请求->(url-pattern)->根据(servlet-mapping)中的（servlet-name）去匹配（servlet）中的(servlet-name),然后寻找到（servlet-class）,最终将请求交由（servlet-class）执行。
+
+五、创建Servlet
+1、回顾纯手工创建第一个Servlet
+步骤：
+编写一个类，继承HttpServlet
+重写doGet()、doPost()方法
+编写web.xml中的servle映射关系
+
+2、借助于Eclipse快速生成Servlet（注意Web.xml里的  <url-pattern>/xbl.cn.WelcomeServlet2</url-pattern>要这么写，亲身经历总结）
+直接新建Servlet即可！(继承、重写。Web.xml 可以借助Eclipse自动生成)
+
+Servlet3.0 与 Servlet2.5的区别：
+Servlet3.0不需要再web.xml中配置，但需要在Servlet的定义处之上编写注解。（注意：@WebServlet("/xbl2.cn.HelloServlet"）里面要这么写，亲身经历总结)）
+匹配流程：请求地址与@WebServlet中的值进行匹配，如果匹配成功，则说明请求的就是注解的类。
+
+3、项目的根目录：WebContent、src(所有的构建路径)
+WebContent中有一个index.jsp：<a href="abc">...<a>
+src中有一个Servlet.java
+
+如果：index.jsp中请求<a href="abc">...<a>,则寻找范围既会在src根目录中找也会在WebContent根目录中找
+
+如果：index.jsp中请求<a href="a/abc">...<a>,则会先在src和WebContent根目录中寻找a,然后再在a中寻找abc
+
+/：
+web.xml中的/代表项目路径
+http://localhost:8888/Servlet3.0Project/
+jsp中的/代表服务器根路径
+http://localhost:8888/
+
+
+六、Servlet生命周期：5个阶段
+加载
+初始化：init（），该方法会在Servlet被加载并实例化的之后执行
+服务：service（）->doGet() doPost()
+销毁：destroy（），Servlet被系统回收时执行
+卸载
+
+initial（）：a.第一次访问Servlet时会被执行（只执行一次）
+                  b.可以修改成tomcat启动时自动执行
+                       1.Servlet2.5中：这样写<Servlet>
+                                                   ...
+                                     <load-on-startup>1</load-on-startup>   //加这句代码
+                                              </Servlet>（其中的1代表Servlet顺序）
+                        2.Servlet3.0中：这样写@WebServlet( value = "xbl2.cn.HelloServlet",loadOnStrtup=1)
+service（）：-> doGet()：调用几次，则执行几次
+destroy（）:关闭tomcat服务时，执行一次
+
+
+七、Servlet API：由两个软件包组成,一个是对应于HTTP协议的软件包，一个是对应于chuleHTTP协议之外的其他软件包。即Servlet API可以适用于任何通信协议。
+我们学习的Servlet，是位于javax.servlet.http包中的类和类和接口，是基础的HTTP协议。
+
+八、Servlet继承关系
+
+ServletConfig：接口
+ServletContext getServletContext()：获取Servlet上下文对象   application(是ServletContext类的对象)
+String getInitParameter(String name)：在当前Servlet范围内，获取名为name的参数值（初始化参数）
+
+a、ServletContext类中的常见方法（相当于application对象中的常见方法):
+getContextPath()：获取相对路径
+getRealPath()：获取绝对路径
+setAttribute()、getAttribute()
+-->
+String getInitParameter(String name)；在当前Web容器范围内，获取名为name的参数值（初始化参数）
+
+<!-- Servlet2.5版本中在整个Web容器中设置初始化参数 -->
+<context-param>
+                 <param-name>放参数名</param-name>
+                 <param-value>放参数值</param-value>
+</context-param>
+
+<!-- Servlet2.5在整个Servlet中设置初始化参数 -->
+<Servlet>
+                ....
+      <init-param>
+                  <param-name>放参数名</param-name>
+                  <param-value>放参数值</param-value>
+      </init-param>
+</Servlet>
+###########################################
+<!-- Servlet3.0在整个Servlet中设置初始化参数 -->
+@WebServlet(value = "/xbl2.cn.HelloServlet",loadOnStartup=1,initParams= {@WebInitParam(name="servletparamname3.0",value="servletparamvalue3.0...")})
+注意：此注解只属于一个具体的Servlet，无法设置Web容器中的初始化参数
+
+<!-- Servlet3.0版本中在整个Web容器中设置初始化参数 -->(方法同Servlet2.5)（不能在@WebServlet注解中设置）
+<context-param>
+                 <param-name>放参数名</param-name>
+                 <param-value>放参数值</param-value>
+</context-param>
+
+HttpServletRequest中的方法：（同request）,例如：setAttrite()、getCookies()、getMethod()
+HttpServletResponse中的方法：同Response
+
+Servlet使用层面（方法）：
+        Eclipse中在src中创建一个Servlet,然后其它的代码删掉，重写doGet() doPost()就可以。（doGet()和doPost()只需要重写一个，另一个调用即可）
+
+九、MVC案例
+
+十、三层架构
+与MVC设计模式的目标一致：都是为了解耦和、提高代码的复用；
+区别：二者对项目理解的角度不同
+
+三层组成：
+表示层（USL,User Show Layer ; 视图层）
+      -前台：对应于MVC中的View,用于和用户交互、页面的显示
+                   jsp js html css jQuery 等web前端技术
+                   代码位置：WebContent
+       -后台：对应于MVC中的Controller,用于控制跳转、调用业务逻辑层
+                   Servlet (SpringMVC Struts2)
+                   代码位置：xxx.servlet包中
+业务逻辑层（BLL，Business Logic Layer; Service层）
+          --接收表示层的请求调用
+          --组装数据访问层，逻辑性的操作（增删改查，删：查+删）
+            代码位置：xxx.service包中 (也可以称为xxx.manager,xxx.bil)
+
+数据访问层（DAL，Data Access Layer; Dao层）
+           -直接访问数据库的操作，原子性的操作（增删改查）
+              代码位置：xxx.dao包       
+
+三层间的关系：
+       上层将请求传递给下层，下层处理后给上层
+       上层依赖于下层，依赖代码的理解，就是持有成员变量或者理解为：有A的前提是必须先有B（先有数据库，才可能有  DAO层，DAO层依赖于数据库）
+      
+Servlet：一个Servlet对应于一个功能，因此如果有增删改查(查询有两个，查询单个，查询多个)5个功能，则需要创建5个Servlet
+
+三层优化
+1.加入接口
+         建议面向的借口开发：先接口，再实现类
+          --service、dao加入接口
+          --接口与实现类的命名规范
+                         接口 ：interface            起名： I实体类Service             IStudentService         所在包起名：xxx.service         xxx.dao
+                                                                            IStudentDao
+                         实现类：implements      起名：实体类ServiceImpl       StudentServiceImpl       所在包 起名：xxx.service.impl    xxx.dao.impl
+                                                                            StudentDaoImpl
+          以后使用接口/实现类时，推荐写法：
+          接口 x = new 实现类（）；
+          IStudent studentDao = new StudentDaoImpl();
+
+2.DBUtil     通用数据库帮助类。可以简化dao层的代码量
+
+index.jsp->index_jsp.java->index_jsp.class
+jsp->java->class
+jsp翻译成的java以及编译后的class文件存在于tomcat中的work目录中

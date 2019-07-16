@@ -1,0 +1,140 @@
+Spring  
+起源于2003年  Rod Johnon这个人发表的<Expoer One-on-one j2eedevlopment and Design>文章
+Spring 2003,  最开始发展的两大Spring核心 IOC Aop
+现在发展的技术：Spring Boot(现在很火),Spring data，Spring cloud,Spring framework,Spring socia等
+
+一、IOC:控制反转（DI：依赖注入）
+1、下载jar
+下载网址：http://maven.springframework.org/release/org/springframework/spring/
+下载文件名：spring-framework-4.3.9.RELEASE-dist.zip
+开发Spring至少需要使用的jar（5个+1个）
+spring-aop-4.3.9.RELEASE.jar                开发AOP特性时需要的jar
+spring-beans-4.3.9.RELEASE.jar             处理Bean的jar                                <bean>
+spring-context-4.3.9.RELEASE.jar           处理spring上下文的jar                    <context>
+spring-core-4.3.9.RELEASE.jar                spring核心jar
+spring-expression-4.3.9.RELEASE.jar       spring表达式
+以及第三方提供的日志jar
+commons-logging.jar                           日志
+
+2、编写配置文件
+为了编写时有一些提示、自动生成一些配置信息，可以给eclipse增加支持spring的插件：spring tool suite
+spring tool suite(插件下载地址：https://spring.io/tools/sts/all)
+进下载地址下载springsource-tool-suite-3.9.7.RELEASE-e4.8.0-updatesite.zip
+然后在Eclipse中安装：依此点Help->Insall new SoftWare->add
+然后在项目中新建：bean configuration..-applicationContext.xml
+
+3、开发Spring程序（IOC）
+                                ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+		context.getBean("student");
+		Student student = (Student)context.getBean("student");
+可以发现，springioc容器帮我们new了对象，并且给对象赋了值
+
+SpringIOC发展史：
+1、
+Student student = new Student();
+student.setxxx();
+2、
+简单工厂
+3、
+ioc（超级工厂）
+
+控制反转：将创建对象、属性值的方式进行了反转，从new、setxxx()反转成了从springIOC容器getBean()
+依赖注入：将属性值注入给了bean,将bean注入给了ioc容器
+从控制反转（IOC）->依赖注入（DI）(只是名字改了而已)
+
+总结：ioc/di,无论要什么对象，都可以直接取springioc容器中获取，而不需要自己操作（new\setxxx()）
+因此之后的ioc分为2步：1、先给springioc中存放对象并赋值 2、拿来用
+
+DI：依赖注入
+Teacher
+
+Course：课程名称cname   授课老师teacher
+
+IOC容器赋值：如果是简单类型（8个基本类型+String）赋值用value；如果是对象类型赋值用ref,ref=“需要引用的id值”，
+因此实现了对象与对象之间的依赖关系
+
+context.getBean（需要获取的bean的id值）
+
+依赖注入的3种方式：
+1、set方式的注入：
+赋值默认使用的是set方法（）；
+依赖注入底层是通过反射实现的
+<property...>
+
+2、构造器注入：通过构造方法赋值
+ <constructor-arg value="ls" name="name" type="String" index="0"></constructor-arg>
+需要注意：如果<constructor-arg>的顺序与构造方法参数的顺序不一致，则需要通过type或index或name来指定
+一般建议写名字一目了然
+
+3、p命名空间注入
+引入命名空间
+xmlns:p="http://www.springframework.org/schema/p"
+引用：
+<bean id="course" class="cn.xbl.entity.Course" p:courseName="c#" p:courseHour="123" p:teacher-ref="teacher">
+简单类型：p:属性名=”属性值“
+引用类型(除了String以外)：p:属性值名字-ref=”引用的id“
+注意：多个p赋值之间要留空格
+
+注意：无论 是String还是int/short/long，在赋值时都是value="值"，因此建议此种情况需要配合name/type进行区分
+（那赋值时记得直接用name加属性值就完事了）
+
+示例：
+       注入各种集合类型数据：List Set map properties
+set、list、数组 各自都有自己的标签<set> <list> <array>,但是也可以混着用
+
+给对象类型赋值null:
+                    <property name="name">
+                                                      <null/>    -->注意没有<value>
+                    </property>
+赋空值“”
+                     <property name="name">
+                                                              <value></value>
+                     </property>
+在oc中定义bean的前提：该bean的类，必须提供了无参构造
+
+自动装配(只适用于引用类型)：(自我感觉自动装配有弊端，所以最好不要用自动装配，自己定义即可)
+<bean...  class="cn.xbl.entity.Course" autowire="byName">
+byName:略
+byType:略
+constructor:略
+
+也可以在头文件一次性统一设置成自动装配（还是那句话，不建议使用）
+自动装配虽然可以减少代码量，但是会降低程序的可读性，使用时需谨慎
+
+#######################################################################
+使用注解定义bean：通过注解的方式将bean以及相应的属性值放入ioc容器
+<context:component-scan base-package="cn.xbl.dao"></context:component-scan>
+Spring启动的时候，会根据base-package在包中扫描所有类，查找这些类是否有注解@Component("studentDao")
+如果有，则将该类加入spring Ioc容器
+
+@Component细化：
+dao层注解：@Repository
+service层注解：@Service
+控制器层注解：@Controller
+
+使用注解实现事务：目标：通过事务使以下方法要么全成功、要么全失败
+public void addStudent(){
+                  //增加班级
+                  //增加学生
+                  //crdu
+}
+
+a、jar
+spring-tx-4.3.9.RELEASE.jar
+mysql-connector-java-5.1.18.jar
+commons-dbcp.jar       连接池使用到数据库
+commons-pool.jar        连接池
+spring-jdbc-4.3.9.RELEASE.jar
+aopalliance.jar
+
+b、配置
+jdbc\mybatis\spring
+增加事务tx的命名空间
+<!-- 增加对事务的支持 --><!-- 核心 -->
+<tx:annotation-driven transaction-manager="txManager"/>
+
+c、使用
+在需要成为事务的方法前增加注解：
+@Transactional(readOnly=false,propagation=Propagation.REQUIRED)
+
+二、AOP：面向方面编程

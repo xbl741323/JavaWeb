@@ -1,0 +1,159 @@
+1.JDBC:Java DataBase Connectivity   可以为多种关系数据库DBMS提供统一的访问方式，用Java来操作数据库；
+2.JDBC  API  主要功能：
+主要做三件事，具体是通过一下类/接口实现:
+DriverManager：负责管理jdbc驱动
+Connection：创建连接(通过DriverManager产生)（Java和数据库之间的连接）
+Statement(PreparedStatement)：实现增删改查（通过Connection产生）
+CallableStatement：调用数据库中的存储过程/存储函数；
+Result：返回的结果集（通过上述的Statement等产生）
+
+Connection产生操作数据库的对象：
+Connection产生Statement对象：通过connection.createStatement();
+Connection产生PreparedStatement对象：通过connection.PrepareStatement();//注意：这里的PrepareStatement()中间没有d
+Connection产生CallableStatement对象：通过connection.PrepareCall();
+
+
+Statement操作数据库：
+增删改：executeUpdate()；
+查询：executeQuery()；
+
+ResultSet:保存结果集 seletc * from xxx
+next()：光标下移，判断是否有下一条数据，有返回true，没有返回false；
+previous()：光标上移，判断是否有下一条数据，有返回true，没有返回false；
+getXxx（字段名/位置下标）：获取具体的字段值
+
+PreparedStatement操作数据库：
+public interface PreparedStatement extends Statement
+因此也有这两个方法：
+增删改：executeUpdate()；
+查询：executeQuery()；
+赋值操作：setXxx();
+
+PreparedStatement与Statement在使用时的区别:
+a.Statement:
+sql
+executeUpdate(sql)
+
+b.PreparedStatement
+sql(可能存在占位符 ？)
+在创建PreparedStatement对象时，将sql预编译PrepareStatement（sql）
+executeUpdate()
+setXxx()替换占位符 ？
+
+推荐使用PreparedStatement：原因如下：
+a.编码更加简便(避免了字符串的拼接)
+String name = "zs";
+int age = 23;
+
+Statement方式：
+String sql = "insert into student(stuno,stuname) valus('"+name+"',"+age+")";
+stmt.excuteUpdate(sql);
+
+PreparedStatement方式：
+String sql = "insert into student(stuno,stuname) valus(?,?)";
+connection.prepareStatement(sql);//预编译一下
+pstmt.setString(1, name);
+pstmt.setInt(2, age);
+
+b.提高性能（因为PreparedStatement有预编译操作，并且只需要预编译一次）
+假设需要重复增加100次
+Statement方式：
+String sql = "insert into student(stuno,stuname) valus('"+name+"',"+age+")";
+stmt.excuteUpdate(sql);//那么这里需要编译100次
+
+PreparedStatement方式：
+String sql = "insert into student(stuno,stuname) valus(?,?)";
+connection.prepareStatement(sql);//预编译一下
+pstmt.setString(1, name);
+pstmt.setInt(2, age);
+pstmt.excuteUpdate();//而这里不需要编译100次，1次就行
+
+c.安全（可以有效防止sql注入）
+sql注入：将客户输入的内容和开发人员的sql语句混为一体
+
+Statement方式：存在被sql注入的危险
+（例如输入   用户名：任意值 ‘ or 1=1 --
+                    密码：任意值）会显示登录成功（但实际根本没这么一个用户）
+分析：
+select count(*） from login where uname =' 任意值 ' or 1=1 --' and upwd = ' 任意值 '
+select count(*） from login where uname =' 任意值 ' or 1=1；
+select count(*） from login ；
+select count(*） from login where uname ='"+name+"' and upwd = '"+pwd+"'
+PreparedStatement方式：可以有效防止sql注入
+所以推荐使用
+
+
+3.jdbc访问数据库的具体步骤：
+a.导入驱动，加载具体的驱动类
+b.与数据库建立连接
+c.发送sql,执行sql
+d.发送结果集(查询)
+
+4.数据库驱动
+                                           驱动jar包                                                         具体驱动类                                                                连接字符串(IP地址、端口号、名字)
+Oracle                                 ojdbc-x.jar （这里的x是版本号）                  oracle.jdbc.OracleDriver                                                 jdbc:oracle:thin:@localhost:1521:ORCL
+MySQL                                mysql-connector-java-x.jar                         com.mysql.jdbc.Driver                                                    jdbc:mysql://localhost:3306/数据库实例名
+SqlServer                             sqljdbc-x.jar                                               com.microsoft.sqlserver.jdbc.SQLServerDriver                 jdbc:microsoft:sqlserver:localhost:1433;databasename=数据库实例名
+
+使用JDBC操作数据库时，如果对数据库进行了更换，只需要替换：驱动、具体驱动类、连接字符串、用户名、密码
+
+5.jdbc总结（模板、八股文）
+套路以后都这么写
+try{
+a.导入驱动包，加载具体的驱动类Class.forName("具体驱动类")；
+b.与数据库建立连接connection = DriverManager.getConnection(...); 
+c.通过connection.获取操作数据库的对象（Statement\preparedStatement\callablestatement）
+d.查询处理结果集rs=pstmt.executeQuery()
+while(rs.next()){ rs.getXxx( .. )}
+}catch(SQLException e)
+{ ... }
+catch(Exception e)
+{ ... }
+finally
+{  
+           //打开顺序与关闭顺序相反 
+           if(rs!=null) rs.close();
+           if(stmt!=null) stmt.close();
+           if(connection!=null) connection.close();
+}
+--jdbc中，除了Class.forName( ) 抛出ClassNotFoundException,其余方法全部抛出SQLException
+
+6、CallableStatement:调用存储过程、存储函数
+connection.prepareCall(参数：存储过程或存储函数名)
+参数格式：
+存储过程：（无返回值return，用Out参数代替）：
+     {  call 存储过程名（参数列表）}
+存储函数：（有返回值return）：
+     { ？= call  存储函数名（参数列表）}
+调用存储过程：
+create or replace procedure addTwoNum( num1 in  number,num2 in number,result out number ) --1+2=3
+as
+begin
+          result :=num1+num2;
+end;
+/
+
+强调：
+如果通过sqlplus访问数据库，只需要开启：OracleServiceSID
+通过其他程序访问数据（sqldevelop、navicate、JDBC），需要开启：OracleServiceSID、XxxListener
+
+JDBC调用存储过程的步骤：
+a、产生调用存储过程的对象（CallableStatement）cstmt = connection.prepareCall(  " . . . "   );
+b、通过setXxx()处理输出参数值cstmt.setInt(1,30);
+c、通过registerOutParameter( . . . )处理输出参数类型
+d、cstmt.execute()执行
+e、接受输出值（返回值）getXxx()
+
+调用存储函数：
+create or replace procedure addTwoNumfunction( num1 in  number,num2 in number ) --1+2=3
+result out number
+as
+          result number;
+begin
+          result :=num1+num2;
+          result result;
+end;
+/
+
+JDBC调用存储函数与存储过程的区别：
+在调用时，注意参数："{？= call addTwoNum(?,?)}"

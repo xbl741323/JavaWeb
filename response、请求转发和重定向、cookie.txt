@@ -1,0 +1,114 @@
+一、respose:响应对象
+提供的方法：
+void addCookie（Cookie cookie）;服务端向客户端增加cookie对象
+void sendRedirect(String location如“x.jsp”) throws IOException;(又名重定向，页面跳转的一种方式)
+void setContetype(String type):设置服务端响应的编码（即设置服务端的contentType类型）
+
+重定向示例:登陆
+login.jsp(登陆页面) -> check.jsp（判断页面）->success.jsp（成功页面）
+
+区别 （重点看a和c）（b以后补充说明  ）        请求转发                           重定向
+a.地址栏是否改变                                     不变（check.jsp）               改变（success.jsp）
+b.是否保留第一次请求时的数据                         保留                               不保留               ----四种范围对象（以后再说）
+c.请求的次数                                                    1次                                 2次
+
+
+请求转发、重定向：(举例解释)
+
+请求转发：         张三 （客户端） ->【服务窗口A（服务端）->服务窗口B 】 
+                           
+重定向：            张三（客户端）  ->【服务窗口A(服务端)】 ->去找B
+                         
+                         张三（客户端）  ->【服务窗口B(服务端)】 ->结束
+
+二、   session   会话对象（存在于服务端，是内置对象）
+ Cookie  (存在于客户端，不是内置对象，使用的话需要new)：Cookie是由服务端产生的，再发给客户端保存。
+ Cookie相当于本地缓存的作用：客户端->服务端（hello.mp4，张三/abc）->客户端（hello.mp4,张三/abc）
+作用：提高访问服务端的效率，但是安全性较差。（特别是涉及到账号，密码等问题的时候）
+
+Cookie: 包含 (键) key(name) - (值）value对
+Cookie对象由javax.servlet.http.Cookie类产生
+该类的构造方法与方法如下：
+构造方法：public Cookie(String key(name),String value)
+方法：
+String getName()：获取name
+String getValue()：获取value
+void setMaxAge(int  expiry);设置最大有效期（秒）(用于为访问信息，密码等提供有效时间，时间越长安全性越差)
+
+服务端发送给客户端的过程：
+a.服务端准备Cookie:
+response.addCookie(Cookie,cookie)
+b.页面跳转（转发，重定向）
+c.客户端获取Cookie:   request.getCookies();
+
+注意：
+a.服务端增加cookie：response对象；客户端获取对象：request对象
+b.不能直接获取某一个单独对象，必须一次性将全部的cookie拿到
+
+通过F12可以发现除了自己设置的Cookie对象外，还有一个name为JSESSIONID的cookie
+
+建议Cookie只保存英文数字，否则需要进行编码、解码处理
+
+1.使用Cookie实现记住用户名功能（Cookie的经典案例）
+
+2.session:会话（概念举例理解如下：）
+a.浏览网站：从开始到关闭是一次会话
+b.购物：从浏览到付款再到退出是一次会话
+c.电子邮件：从浏览到写邮件到退出是一次会话
+   总结：从一次开始到一次结束叫一次会话
+
+session机制：
+客户端第一次请求服务端时，(会将产生的sessionid与服务端的JSESSIONID相匹配，如果匹配失败)服务端会产生一个session对象（用于保存客户的信息）；
+并且每一个session对象都会有一个唯一的sessionid(用于区分其他的session)；
+服务端又会产生一个cookie,并且该cookie的name=JSESSIONID,value=服务端的sessionid的值；
+然后服务端会在响应客户端的同时将该cookie发送给客户端，至此客户端就有了一个cookie（JESSIONID）;
+因此，客户端的cookie就可以和服务端的session 一 一对应（JSESSIONID - sessionID）
+
+客户端第二/n次请求服务端时，服务端会根据客户端cookie中的JSESSIONID去服务端的session中匹配sessionid,如果匹配成功（即cookie jsessionid和session sessionid相同），说明此用户不是第一次访问，无需再次登录；
+
+例子：
+客户端：             顾客（客户端）
+服务端: 存包处 ->商场（服务端）
+
+顾客第一次存包：商场判断此人是否之前已经存过包（通过你手里是否有钥匙）。
+如果是新顾客（没钥匙），分配一个钥匙给顾客；钥匙和柜子 一 一对应；
+
+顾客第二/n次存包：商场判断此人是否之前已经存过包（通过你手里是否有钥匙）。
+如果是老顾客（有钥匙），则不需要分配；该顾客手里的钥匙会和柜子自动 一 一对应；
+
+session:
+a.session存储在服务端
+b.session是在同一个用户（客户）请求时共享
+c.实现机制：第一次用户请求时，产生一个sessionid并复制给cookie的JSESSIONID然后发送给客户端。最终，通过session的sessionid与cookie的JSESSIONID实现 一 一对应的关系。
+
+session方法：
+String getId():获取sessionId
+boolean isNew():判断是否是新用户（第一次访问）
+void invalidate（）：使session失效（退出登录，注销）
+
+void setAttribute()
+Object getAttribute()(暂时不说用法，后面讲)
+
+void setMaxInactiveInterval(秒)：设置最大有效非活动时间
+int getMaxInactiveInterval(秒)：获取最大有效非活动时间
+
+示例：
+登录
+
+客户端在第一次请求服务器时，如果服务端发现，此请求没有JSESSIONID，则会创建一个name=JSESSIONID的cookie，并返回给客户端。
+Cookie:
+a.不是内置对象，要使用必须new
+b.但是，服务端会自动生成一个（服务端自动new一个cookie）name=JSESSIONID的cookie并返回给客户端
+
+cookie和session的区别：
+                                                 session                                    cookie
+保存的位置                                 服务端                                     客户端
+安全性                                        较安全                                    较不安全
+保存的内容                                 Object                                     String
+
+三、appliation   全局对象
+方法 ：
+String getContextPath() 虚拟路径
+String getRealPath(String name) : 绝对路径（虚拟路径  相对的绝对路径）
+
+

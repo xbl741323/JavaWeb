@@ -1,0 +1,33 @@
+mybatis:
+	ibatis:apache
+	2010 ibatis-> google colde ,Mybatis
+
+
+MyBatis可以简化JDBC操作，实现数据的持久化 。
+	ORM:Object Relational Mapping
+	    person对象   person表
+
+	ORM：概念 ，
+		Mybatis是ORM的一个实现/Hibernate 
+	orm可以是的开发人员  像操作对象一样 操作数据库表。
+
+
+开发mybatis程序从步骤：
+1.配置mybatis
+conf.xml:配置数据库信息 和 需要加载的映射文件
+表 - 类
+映射文件xxMapper.xml  :增删改查标签<select>
+测试类：
+session.selectOne("需要查询的SQL的namespace.id","SQL的参数值");
+
+
+
+
+
+
+
+
+
+
+
+

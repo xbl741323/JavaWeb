@@ -1,0 +1,71 @@
+1.Jsp:动态网页
+静态，动态：
+1.不用和是否有“动态”混为一谈
+2.是否随着时间，地点，用户操作的改变而改变
+
+动态网页需要用到服务端脚本语言（Jsp）
+
+2.架构
+CS:  client Server
+CS不足:
+a.如果软件升级，那么所有软件都需要升级
+b.维护麻烦：需要维护每一台客户端软件
+c:每一台客户端都需要安装客户端软件
+BS：broswer Server
+客户端可以通过浏览器直接访问服务端
+注意：bs和cs各有优势。
+
+3.tomact解压后目录：
+bin:：可执行文件（startup.bat    shutdown.bat）
+conf： 配置文件（server.xml）
+lib： tomact依赖的jar文件
+log：日志文件（记录出错等信息）
+temp：临时文件
+webapps：可执行的项目（将我们开发的项目放入该目录）
+work：存放由jsp翻译成的Java文件，以及编辑成的class文件(jsp->java->class)
+
+4.配置Tomact
+a.配置jdk(必须配置JAVA_HOME)
+JAVA_HOME  classPath   path 这三个全配了
+b.配置CATALINA_HOME)
+在系统变量里新建一个系统变量
+变量名：CATALINA_HOME
+变量值：文件根目录地址
+配置好后打开bin目录下的startup.bat检查是否配置成功（结尾显示org.apache.catalina.startup
+.Catalina.start Server startup in ### ms）表示配置成功（若出现闪退，打不开，没有以上信息提示则表示没有成功）
+关闭服务器最好双击shutdown.bat(windows操作系统下)（Linux操作系统下双击shutdown.sh）
+
+注意：双击bin/startup.bat启动tomact,
+常见错误：可能与其它服务器的端口号冲突
+tomacat端口号默认8080（此端口号较为常见，容易冲突），建议修改此端口（为8888）
+
+修改端口号方法：打开conf/server.xml
+进入文档后下拉寻找<Connector port="8080"protocol="HTTP/1.1"
+                                                connectionTimeout="20000"
+                                                 redirectPort="8443"/>将8080改成8888即可（也可以自己定义）改完重新启动即可
+5.访问Tomact
+启动服务器后浏览器里本地搜索localhost:8888回车即可（IE浏览器里要加http://）
+显示出来的页面存放在webapps/ROOT文件里，可以通过http://localhost:8888/文件名 的形式访问别的文件
+可以在webapps里建立自己的项目文件（文件名自拟），如文件名：JspProject
+但有一定的规则
+a:在里面要有WEB-INF文件（及里面的web.xml），（可从相同文件里的其他文件目录下拷贝粘贴）
+b:要有两个文件夹classes和lib(自己建立即可)，classes文件夹里存放字节码文件，lib里放jar包
+
+常见状态码：
+404：资源不存在
+300/301：页面重定向（跳转）
+200：一切正常
+403：权限不足（如果访问a目录，但是a目录设置不可见）
+500：服务器内部错误（代码有错误）
+其他状态码：积累（见一个记一个）
+
+Jsp：在html中嵌套的java代码（通过<%   %>来嵌套）
+
+可在项目/WEB-INF/web.xml中设置默认的初始页面
+     <welcome-file-list>
+              <welcome-file>index.jsp</welcome-file>
+     </welcome-file-list>
+
+
+
+

@@ -1,0 +1,104 @@
+1.JSP的页面元素：HTML     Java代码
+a.脚本Scriptlet
+i.
+         <%！
+                        全局变量，定义方法
+         %>
+
+ii.
+         <%
+                        局部变量，Java语句
+         %>
+
+iii.
+          <%=      输出表达式     %>
+
+一般而言，修改web.xml,配置文件,java 需要重启tomcat服务器
+但是如果修改Jsp\html\css\js,不需要重启服务器
+
+注意：out.println()不能回车，要想回车加“<br/>”,即out.print()  <%=  %>可以直接
+解析html代码
+
+b.指令
+page指令
+<%@ page ....%>
+page指定的属性：
+language:jsp页面使用的脚本语言
+import：导入类
+pageEncoding:jsp文件自身编码   jsp ->java
+contentType:浏览器解析jsp的编码
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"  import="java.util.Date"%>
+
+c.注释
+         html注释<!--   -->,可以被客户通过浏览器查看源码所观察到
+         java注释 1.单行注释：//  2.多行注释：/*   */
+         jsp注释 <%--    --%>         
+
+2.JSP9大内置对象（自带的，不需要new也能使用的对象）   
+out:输出对象，向客户端输出内容
+request：请求对象；存储“客户端向服务端发送的请求信息”
+       request对象的常见方法：
+       String getParameter(String name) :根据请求的字段名key  (input标签的name属性值 ) ,返回字段值 value( )
+       String[ ] getParameter(String name) :根据请求的字段名key,返回多个字段值value  (checkbox)
+       void setCharacterEncoding("编码格式UTF-8")  : 设置post方式的请求编码  （tomcat7以前默认iso-8859-1,tomcat8以       后默认
+       getRequestDispatcher("b.jsp").forward(request,response);  :  请求转发     A->B） 
+       ServletContext  getServerContext():获取项目的ServletContext对象
+ 示例：
+ 注册：register.jsp ,show.jsp
+http://localhost:8888/MyJspProject/show.jsp?uname=zs&upwd=324&uage=13&uhobbies%E8%B6%B3%E7%90%83
+                        连接/文件？ 参数名1=参数值1&参数名2=参数值2&参数名3=参数值3
+get提交方式：meathod="get" 和 地址栏，超链接（<a  href="xx">）请求方法默认都属于get提交方式
+
+get 与post请求方式的区别：
+a.      get方式在地址栏显示请求信息（但是地址栏能够容纳的信息有限，4-5KB,太大显示不下，如果请求数据存                             大文件，图片等会出现地址栏无法容纳全部的数据而出错）；post不会显示
+b.     文件上传操作，必须是post（为安全考虑，推荐使用post）
+
+3.统一请求的编码 request
+get方式如果出现乱码，
+例如：默认的是UTF-8请求时确是tomcat7（iso-8859-1）运行结果会出现乱码
+解决方法：
+a.统一每一个变量的编码（要一个一个改，太麻烦，不推荐）
+格式  new String(旧编码，新编码);name = new String(name.get.Byte("iso-8859-1"),"UTF-8");
+b.修改server.xml,一次性的更改tomcat默认get提交方式的编码（从默认编码改成UTF-8，在port="8888"那一段的后面加上URLEncoding="UTF-8"），另外建议使用tomcat时，首先在server.xml中统一get方式的编码即加URLEncoding="UTF-8"。
+
+post方式如果出现乱码,
+解决方法：
+jsp文件里加request.setCharacterEncoding("UTF-8");
+
+
+response    响应对象
+pageContext   jsp页面容器
+session    会话对象
+application   全局对象
+config   配置对象（服务器配置信息）
+page  当前jsp页面对象（相当于java中的this）
+exception   异常对象
+  
+四种范围对象 （从小到大）                                    
+pageContext   jsp页面容器   (有的书里也称为page对象)；当前页面有效
+request    请求对象                                                        同一次请求有效
+session    会话对象                                                        同一次会话有效
+application   全局对象                                                     全局有效（整个项目有效）
+以上4个对象共有的方法：
+Object getAttribute(String name):根据属性名，获取属性值。
+void setAttribute(String name,Object obj):设置属性值（新增，修改）
+          setAttribute(“a”,"b");//如果a对象之前不存在，则新建一个a对象；
+                                               如果a之前已经存在，则将a的值改为b;
+void removeAttribute(String name);//根据属性名，删除对象
+
+a.
+pageContext    当前页面有效（页面跳转后无效）
+
+b.
+request    同一次请求有效,其他请求无效（请求转发后有效，重定向后无效）
+
+c.
+session   同一次会话有效（无论页面怎么跳转，都有效，关闭/切换浏览器后无效，从登录到退出之间都有效）
+
+d.
+application   整个项目运行期间都有效（切换浏览器仍然有效）;关闭服务、其他项目无效
+->多个项目共享、重启后仍然有效：JNDI（后面再讲）
+
+1.以上的4个范围对象，通过setAttribute()复制，通过getAttribute()取值；
+2.以上范围对象，尽量使用最小的范围，因为对象的范围越大，造成的性能损耗越大；
