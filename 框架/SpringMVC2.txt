@@ -1,0 +1,136 @@
+1.处理模型数据
+如果跳转时需要带数据：V、M,则可以使用以下方式：
+ModelAndView、ModelMap  、Map、Model   -数据放在了request作用域 
+
+@SessionAttributes、@ModelAttribute
+
+示例：
+public String testModel(Model model|	Map<String,Object> m) {
+
+m.put(x,".."); 就会将x对象 放入request域中
+
+
+如何将上述数据放入session中？@SessionAttributes(..)
+
+@ModelAttribute 
+i.经常在 更新时使用
+ii.在不改变原有代码的基础之上，插入一个新方法。
+
+通过@ModelAttribute修饰的方法 ，会在每次请求前先执行；
+并且该方法的参数map.put()可以将 对象 放入 即将查询的参数中；
+必须满足的约定：
+map.put(k,v) 其中的k 必须是即将查询的方法参数 的首字母小写
+testModelAttribute(Student xxx)  ，即student；
+如果不一致，需要通过@ModelAttribute声明。如下：
+	@ModelAttribute//在任何一次请求前，都会先执行@ModelAttribute修饰的方法
+		public void queryStudentById(Map<String,Object> map) {
+			//StuentService stuService = new StudentServiceImpl();
+			//Student student = stuService.queryStudentById(31);
+			//模拟调用三层查询数据库的操作
+			Student student = new Student();
+			student.setId(31);
+			student.setName("zs");
+			student.setAge(23);
+			map.put("stu", student) ;//约定：map的key 就是方法参数 类型的首字母小写
+		}
+
+		//修改:Zs-ls
+		@RequestMapping(value="testModelAttribute")
+		public String testModelAttribute(@ModelAttribute("stu")Student student) {
+			student.setName(student.getName());//将名字修改为ls
+			System.out.println(student.getId()+","+student.getName()+","+student.getAge());
+			return "success";
+		}
+
+
+一个Servlet 对应一个功能：
+增删改查  对应于 4个Servlet
+
+
+更新：	Servlet  - SpringMVC的Controller
+
+查询
+@ModelAttribute
+public void query()
+{
+
+}
+
+修改
+public String update()
+{
+
+}
+
+@ModelAttribute会在 该类的每个方法执行前 均被执行一次，因为使用时需要注意。
+
+
+2.视图、视图解析器
+
+视图的顶级接口:View
+视图解析器：ViewResolver
+
+常见的视图和解析器：
+InternalResourceView、InternalResourceViewResolver
+
+public class JstlView extends InternalResourceView：
+
+springMVC解析jsp时 会默认使用InternalResourceView， 
+如果发现Jsp中包含了jstl语言相关的内容，则自动转为JstlView。
+
+
+
+JstlView 可以解析jstl\实现国际化操作
+
+国际化： 针对不同地区、不同国家 ，进行不同的显示 
+
+ 
+中国:（大陆、香港）     欢迎
+美国：			welcome  
+
+
+
+
+
+i18n_zh_CH.properties		
+resource.welcome=你好
+resource.exist=退出
+
+i18n.properties	
+
+
+
+		
+具体实现国际化步骤：
+a.创建资源文件
+基名_语言_地区.properties
+基名_语言.properties
+
+b.配置springmvc.xml，加载资源文件
+
+	<!-- 加载国际化资源文件 -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+	<property name="basename" value="i18n"></property>
+	</bean>
+ResourceBundleMessageSource会在springmvc响应程序时 介入（解析国际化资源文件）
+
+c.通过jstl使用国际化
+	jstl.jar  standar.jar
+	
+springmvc在启动时，会自动查找一个id="messageSource"的bean，如果有  则自动加载
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
