@@ -1,0 +1,86 @@
+1.错误消息：
+public String testDateTimeFormat(Student student, BindingResult result ,Map<String,Object> map) {
+需要验证的数据是 Student中的birthday, SPringMVC要求 如果校验失败  则将错误信息 自动放入 该对象之后紧挨着的	BindingResult中。
+即Student student, BindingResult result之间 不能有其他参数。
+
+如果要将控制台的错误消息 传到jsp中显示，则可以将 错误消息对象放入request域中，然后 在jsp中 从request中获取。
+
+
+
+
+2. 数据校验   
+	JSR303  
+	Hibernate Validator 
+
+使用Hibernate Validator步骤：
+
+a.jar（注意各个jar之间可能存在版本不兼容）
+hibernate-validator-5.0.0.CR2.jar 	classmate-0.8.0.jar 	jboss-logging-3.1.1.GA.jar
+validation-api-1.1.0.CR1.jar 	hibernate-validator-annotation-processor-5.0.0.CR2.jar
+
+
+
+b配置
+	<mvc:annotation-driven ></mvc:annotation-driven>
+此时mvc:annotation-driven的作用：要实现Hibernate Validator/JSR303 校验（或者其他各种校验），必须实现SpringMVC提供的一个接口：ValidatorFactory
+
+LocalValidatorFactoryBean是ValidatorFactory的一个实现类。
+<mvc:annotation-driven ></mvc:annotation-driven>会在springmvc容器中 自动加载一个LocalValidatorFactoryBean类，因此可以直接实现数据校验。
+
+c.直接使用注解
+
+public class Student {
+
+	@Past//当前时间以前
+	private Date birthday ;
+}
+	
+
+在校验的Controller中 ，给校验的对象前增加 @Valid
+		public String testDateTimeFormat(@Valid Student student, BindingResult result ,Map<String,Object> map) {
+			{...}
+
+
+3.Ajax请求SpringMVC，并且JSON格式的数据
+a.jar
+jackson-annotations-2.8.9.jar
+jackson-core-2.8.9.jar
+jackson-databind-2.8.9.jar
+
+
+b。
+@ResponseBod修饰的方法，会将该方法的返回值 以一个json数组的形式返回给前台
+
+@ResponseBody//告诉SpringMVC，此时的返回 不是一个 View页面，而是一个 ajax调用的返回值（Json数组）
+		@RequestMapping(value="testJson")
+		public List<Student> testJson() {
+			//Controller-Service-dao
+			//StudentService studentService = new StudentServiceImp();
+//			List<Student> students =  studentService.qeuryAllStudent();
+			//模拟调用service的查询操作
+			
+			...
+			List<Student> students = new ArrayList<>();
+			students.add(stu1) ;
+			students.add(stu2) ;
+			students.add(stu3) ;
+			
+			return students;
+		}
+
+
+前台：服务端将返回值结果 以json数组的形式 传给了result。
+	$("#testJson").click(function(){
+					//通过ajax请求springmvc
+					$.post(
+						"handler/testJson",//服务器地址
+						//{"name":"zs","age":23}
+						function(result){//服务端处理完毕后的回调函数 List<Student> students， 加上@ResponseBody后， students实质是一个json数组的格式
+							for(var i=0;i<result.length ;i++){
+								alert(result[i].id +"-"+result[i].name +"-"+result[i].age);
+							}
+						}
+					);
+
+
+	

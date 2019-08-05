@@ -1,0 +1,114 @@
+SSM整合：
+Spring - SpringMVC -  MyBatis 
+
+1.
+Spring -  MyBatis   :	需要整合：将MyBatis的SqlSessionFactory 交给Spring
+
+2
+Spring - SpringMVC  ：  就是将Spring - SpringMVC 各自配置一遍
+
+
+
+
+
+
+思路：
+	SqlSessionFactory -> SqlSession ->StudentMapper ->CRUD
+可以发现 ，MyBatis最终是通过SqlSessionFactory来操作数据库，
+Spring整合MyBatis 其实就是 将MyBatis的SqlSessionFactory 交给Spring
+
+SM整合步骤：
+1.jar
+mybatis-spring.jar	spring-tx.jar	spring-jdbc.jar		spring-expression.jar
+spring-context-support.jar	spring-core.jar		spring-context.jar
+spring-beans.jar	spring-aop.jar	spring-web.jar	commons-logging.jar
+commons-dbcp.jar	ojdbc.jar	mybatis.jar	log4j.jar	commons-pool.jar
+
+2.类-表
+
+Student类 -student表
+
+
+3.-（与Spring整合时，conf.xml可省）--MyBatis配置文件conf.xml（数据源、mapper.xml） --可省，将该文件中的配置 全部交由spring管理
+
+spring配置文件 applicationContext.xml
+
+
+
+4.通过mapper.xml将 类、表建立映射关系
+
+
+5.
+之前使用MyBatis:	conf.xml ->SqlSessionFacotry 
+
+现在整合的时候，需要通过Spring管理SqlSessionFacotry ，因此 产生qlSessionFacotry 所需要的数据库信息 不在放入conf.xml  而需要放入spring配置文件中
+
+
+配置Spring配置文件（applicationContext.xml）  （Web项目）：
+web.xml
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:applicationContext.xml</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+
+
+
+6.使用Spring整合MyBatis ：将MyBatis的SqlSessionFactory 交给Spring
+
+
+7.继续整合SpringMVC：将springmvc加入项目即可 
+a.加入SpringMVC需要的jar
+spring-webmvc.jar
+
+b.给项目加入SpringMVC支持
+web.xml: dispatcherServlet
+
+c.编写springmvc配置文件：
+applicationContext-controller.xml：视图解析器、基础配置
+
+
+d.示例
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
